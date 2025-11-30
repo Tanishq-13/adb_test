@@ -9,8 +9,8 @@ services:
     links:
       - mongo
     volumes:
+      - ${ADBREW_CODEBASE_PATH}/rest:/src/rest
       - ${ADBREW_CODEBASE_PATH}/tmp:/tmp
-      - ${ADBREW_CODEBASE_PATH}:/src
 
   app:
     build: .
@@ -19,16 +19,13 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ${ADBREW_CODEBASE_PATH}:/src
+      - ${ADBREW_CODEBASE_PATH}/app:/src/app
 
   mongo:
-    build: .
+    image: mongo
     container_name: mongo
     restart: always
     ports:
       - "27017:27017"
     volumes:
-      - ${ADBREW_CODEBASE_PATH}/db/:/data/db
-    command: /usr/bin/mongod --bind_ip 0.0.0.0
-
-    
+      - ${ADBREW_CODEBASE_PATH}/db:/data/db

@@ -11,10 +11,27 @@ db = MongoClient(mongo_uri)['test_db']
 class TodoListView(APIView):
 
     def get(self, request):
-        # Implement this method - return all todo items from db instance above.
-        return Response({}, status=status.HTTP_200_OK)
+        todos = list(db.todos.find({}, {"_id": 1, "description": 1}))
+        
+        # Convert ObjectId to string
+        for t in todos:
+            t["_id"] = str(t["_id"])
+        
+        return Response(todos, status=status.HTTP_200_OK)
         
     def post(self, request):
-        # Implement this method - accept a todo item in a mongo collection, persist it using db instance above.
-        return Response({}, status=status.HTTP_200_OK)
+        description = request.data.get("description", "").strip()
 
+        if not description:
+            return Response(
+                {"error": "Description is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Insert into MongoDB
+        inserted = db.todos.insert_one({"description": description})
+
+        return Response(
+            {"_id": str(inserted.inserted_id), "description": description},
+            status=status.HTTP_201_CREATED
+        )
